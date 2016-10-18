@@ -4,7 +4,7 @@
  * it is licensed under the BSD 3-Clause license.
  */
 
-#include <socket.h>
+#include <simplelink.h>
 /* note: socket.h has a define socket->sl_Socket,
          this affects xi_bsp_socket_events_t->socket member.
          This is the reason it is before xi_bsp_io_net.h.
@@ -70,9 +70,14 @@ xi_bsp_io_net_connect( xi_bsp_socket_t* xi_socket, const char* host, uint16_t po
     errval =
         sl_Connect( *xi_socket, ( struct sockaddr* )&name, sizeof( struct sockaddr ) );
 
-    if ( -1 == errval )
+    if ( errval < 0 )
     {
-        return XI_BSP_IO_NET_STATE_ERROR;
+        if( errval != SL_EALREADY )
+        {
+            return XI_BSP_IO_NET_STATE_ERROR;
+        }
+
+        return XI_BSP_IO_NET_STATE_OK;
     }
 
     return XI_BSP_IO_NET_STATE_OK;
