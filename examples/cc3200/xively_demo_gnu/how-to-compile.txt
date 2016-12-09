@@ -1,0 +1,9 @@
+compile libxively for CC3200 :
+
+	make PRESET=CC3200
+
+compile wolfssl with this command ( replace gnuarm folders if needed ):
+
+./configure --host=arm-none-eabi CC=/Applications/gcc-arm-none-eabi/bin/arm-none-eabi-gcc AR=/Applications/gcc-arm-none-eabi/bin/arm-none-eabi-ar RANLIB=/Applications/gcc-arm-none-eabi/bin/arm-none-eabi-ranlib --enable-static CFLAGS="-Os -mthumb -mcpu=cortex-m4 -march=armv7e-m -lc -lrdimon -specs=rdimon.specs -mfloat-abi=soft -mfpu=fpv4-sp-d16 -gdwarf-3 -gstrict-dwarf -DNO_WRITEV -DWOLFSSL_USER_IO -ffunction-sections " `cat ../wolfssl.conf`
+
+replace include folders in cc studio if needed, then compile and run

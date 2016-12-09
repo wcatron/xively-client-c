@@ -19,13 +19,11 @@ COMPILER ?= arm_15.12.3.LTS
 ifeq ($(XI_HOST_PLATFORM),Darwin)
 	# osx cross-compilation downloads
 
-	XI_CC3200_PATH_CCS_TOOLS ?= /Applications/ti/ccsv6/tools
+	XI_CC3200_PATH_CCS_TOOLS ?= /Applications/gcc-arm-none-eabi
 	XI_CC3200_PATH_SDK ?= $(HOME)/ti/tirex-content/CC3200SDK_1.1.0/cc3200-sdk
 
-	CC = $(XI_CC3200_PATH_CCS_TOOLS)/compiler/$(COMPILER)/bin/armcl
-	AR = $(XI_CC3200_PATH_CCS_TOOLS)/compiler/$(COMPILER)/bin/armar
-
-	XI_COMPILER_FLAGS += -I$(XI_CC3200_PATH_CCS_TOOLS)/compiler/$(COMPILER)/include
+	CC = $(XI_CC3200_PATH_CCS_TOOLS)/bin/arm-none-eabi-gcc
+	AR = $(XI_CC3200_PATH_CCS_TOOLS)/bin/arm-none-eabi-ar
 
 ###
 ## WINDOWS HOST OS
@@ -69,27 +67,24 @@ endif
 XI_COMPILER_FLAGS_TMP := $(filter-out -Wall -Werror -Wno-pointer-arith -Wno-format -Wextra -Os -g -O0, $(XI_COMPILER_FLAGS))
 XI_COMPILER_FLAGS = $(XI_COMPILER_FLAGS_TMP)
 
-XI_COMPILER_FLAGS += -mv7M4
-XI_COMPILER_FLAGS += -me
-XI_COMPILER_FLAGS += -ms
-XI_COMPILER_FLAGS += --define=css
-XI_COMPILER_FLAGS += --define=cc3200
-XI_COMPILER_FLAGS += --define=WOLFSSL_NOOS_XIVELY
-XI_COMPILER_FLAGS += --display_error_number
-XI_COMPILER_FLAGS += --diag_warning=225
-XI_COMPILER_FLAGS += --diag_wrap=off
-XI_COMPILER_FLAGS += --abi=eabi
-XI_COMPILER_FLAGS += --opt_for_speed=0
-XI_COMPILER_FLAGS += --code_state=16
-XI_COMPILER_FLAGS += --float_support=vfplib
-XI_COMPILER_FLAGS += --preproc_with_compile
-XI_COMPILER_FLAGS += --preproc_dependency=$(@:.o=.d)
-XI_COMPILER_FLAGS += --obj_directory=$(dir $@)
-XI_COMPILER_FLAGS += --asm_directory=$(dir $@)
-XI_COMPILER_FLAGS += --output_file=$@
+XI_COMPILER_FLAGS += -c
+XI_COMPILER_FLAGS += -mcpu=cortex-m4
+XI_COMPILER_FLAGS += -march=armv7e-m
+XI_COMPILER_FLAGS += -mthumb
+XI_COMPILER_FLAGS += -mfloat-abi=soft
+XI_COMPILER_FLAGS += -DPART_CC3200
+XI_COMPILER_FLAGS += -gdwarf-3
+XI_COMPILER_FLAGS += -gstrict-dwarf
+XI_COMPILER_FLAGS += -DWOLFSSL_NOOS_XIVELY
+#XI_COMPILER_FLAGS += -fshort-wchar
+XI_COMPILER_FLAGS += -ffunction-sections
+
+
+#XI_COMPILER_FLAGS += -Dcss
+#XI_COMPILER_FLAGS += -D3200
 
 ifneq (,$(findstring release,$(TARGET)))
-    XI_COMPILER_FLAGS += -O4
+    XI_COMPILER_FLAGS += -Os
 endif
 
 ifneq (,$(findstring debug,$(TARGET)))
@@ -97,10 +92,13 @@ ifneq (,$(findstring debug,$(TARGET)))
 endif
 
 XI_COMPILER_FLAGS += -I$(XI_CC3200_PATH_SDK)/driverlib
+XI_COMPILER_FLAGS += -I$(XI_CC3200_PATH_SDK)/simplelink
+XI_COMPILER_FLAGS += -I$(XI_CC3200_PATH_SDK)/simplelink/source
+XI_COMPILER_FLAGS += -I$(XI_CC3200_PATH_SDK)/simplelink/include
 XI_COMPILER_FLAGS += -I$(XI_CC3200_PATH_SDK)/inc
 XI_COMPILER_FLAGS += -I$(XI_CC3200_PATH_SDK)/example/common
-XI_COMPILER_FLAGS += -I$(XI_CC3200_PATH_SDK)/simplelink/include
 XI_COMPILER_FLAGS += -I$(XI_CC3200_PATH_SDK)/simplelink_extlib/provisioninglib
+XI_COMPILER_FLAGS += -I/Applications/gcc-arm-none-eabi/arm-none-eabi/include
 
 # Xively Client config flags
 XI_CONFIG_FLAGS += -DXI_CROSS_TARGET
@@ -108,6 +106,7 @@ XI_CONFIG_FLAGS += -DXI_EMBEDDED_TESTS
 
 # wolfssl API
 XI_CONFIG_FLAGS += -DNO_WRITEV
+XI_CONFIG_FLAGS += -DSINGLE_THREADED
 
 XI_ARFLAGS := r $(XI)
 XI_LIB_FLAGS := -llibxively.a
